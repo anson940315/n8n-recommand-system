@@ -1,0 +1,61 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local macOS/editor files
+.DS_Store
+.vscode/
+
+# Local data and generated outputs (do not publish)
+*.xlsx
+*.xls
+*.csv
+*.json
+*.log
+
+# Local-only private data
+/private/*
+!/private/
+!/private/README.md
+/data/private/
+!/data/private/.gitkeep
+/data/sample/
+!/data/sample/.gitkeep
+
+# Public fake data for documentation and tests
+!/examples/
+!/examples/*.csv
+
+# Keep only minimal project folders
+outputs/*
+!outputs/
+!outputs/.gitkeep
+!outputs/api_jobs/
+!outputs/api_jobs/.gitkeep
+!outputs/n8n_weekly/
+!outputs/n8n_weekly/.gitkeep
+
+# Sensitive/private files
+customer_profiles.xlsx
+random_104_gcis_filtered_profiles*.xlsx
+104_b2b_*_workflow.json
+README_HANDOFF.md
+n8n-job-search-*.json
+*.service-account*.json
+*.key
+.env
+.env.*
+credentials/
+secrets/
+
+# Public project only: keep source code and config files
+!requirements.txt
+!api_server.py
+!company_104_client.py
+!cosine_similarity_analysis.py
+!email_enrichment.py
+!random_104_pipeline.py
+!README.md
+!examples/*.csv
