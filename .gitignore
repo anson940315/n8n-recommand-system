@@ -27,6 +27,7 @@ __pycache__/
 # Public fake data for documentation and tests
 !/examples/
 !/examples/*.csv
+!/examples/*.json
 
 # Keep only minimal project folders
 outputs/*
@@ -59,3 +60,4 @@ secrets/
 !random_104_pipeline.py
 !README.md
 !examples/*.csv
+!examples/*.json

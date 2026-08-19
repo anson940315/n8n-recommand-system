@@ -28,7 +28,8 @@ This repository includes only synthetic sample data under `examples/` so the pip
 ├── random_104_pipeline.py
 ├── examples/
 │   ├── sample_customers.csv
-│   └── sample_potentials.csv
+│   ├── sample_potentials.csv
+│   └── n8n_weekly_lead_scoring_public_template.json
 ├── outputs/
 │   └── .gitkeep
 ├── private/
@@ -93,6 +94,23 @@ curl http://127.0.0.1:5001/health
 ```
 
 The API writes job state and outputs under `outputs/`, which is intentionally excluded from Git.
+
+## n8n Workflow Template
+
+An importable public n8n template is included at:
+
+```text
+examples/n8n_weekly_lead_scoring_public_template.json
+```
+
+The template shows the weekly automation shape:
+
+- start a lead-scoring job through the Flask API
+- wait and poll job status
+- fetch compact top leads
+- build a summary payload for downstream review
+
+It intentionally excludes Gmail nodes, Google Sheets nodes, credentials, real sheet URLs, real recipients, and real company data. Add those settings only in your private n8n environment.
 
 ## Public Sharing Checklist
 

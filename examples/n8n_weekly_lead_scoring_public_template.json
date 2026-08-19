@@ -1,0 +1,217 @@
+{
+  "name": "Public Template - 104 Lead Scoring Weekly Flow",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5001/weekly-leads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { async: true, crawl_before_score: false, customers: 'examples/sample_customers.csv', potentials: 'examples/sample_potentials.csv', output_dir: 'outputs/n8n_demo', history_file: 'outputs/n8n_demo/development_history.csv', top_leads_file: 'outputs/n8n_demo/top_leads.csv', top_n: 5 } }}"
+      },
+      "id": "start-weekly-lead-scoring-job",
+      "name": "Start Weekly Lead Scoring Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "id": "wait-before-polling",
+      "name": "Wait Before Polling",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        0
+      ],
+      "webhookId": "public-template-wait"
+    },
+    {
+      "parameters": {
+        "url": "=http://127.0.0.1:5001/jobs/{{ $('Start Weekly Lead Scoring Job').first().json.job_id }}"
+      },
+      "id": "check-job-status",
+      "name": "Check Job Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "job-is-done",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "done",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "job-done",
+      "name": "Job Done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=http://127.0.0.1:5001/jobs/{{ $('Start Weekly Lead Scoring Job').first().json.job_id }}/top-leads?compact=1&limit=5"
+      },
+      "id": "get-top-leads",
+      "name": "Get Top Leads",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = $json.leads || [];\nconst topRows = leads.map((lead) => ({\n  rank: lead.outreach_rank || lead.rank,\n  company: lead['企業名稱'],\n  score: Number(lead.similarity_score || 0).toFixed(4),\n  city: lead['104_address_city'] || '',\n  snackSignals: lead['104_welfare_snack_keywords'] || ''\n}));\nreturn [{\n  json: {\n    demo: true,\n    job_id: $('Start Weekly Lead Scoring Job').first().json.job_id,\n    count: leads.length,\n    top_leads: topRows,\n    next_steps: [\n      'Review top leads manually',\n      'Write to a private Google Sheet in your own n8n workflow',\n      'Send email only after compliance and recipient settings are configured privately'\n    ]\n  }\n}];"
+      },
+      "id": "build-public-demo-summary",
+      "name": "Build Public Demo Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        740,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    status: $json.status,\n    message: 'Job is not done yet. Run the polling step again, or replace this public template with a loop in your private workflow.',\n    job_id: $('Start Weekly Lead Scoring Job').first().json.job_id\n  }\n}];"
+      },
+      "id": "not-done-placeholder",
+      "name": "Not Done Placeholder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        120
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Start Weekly Lead Scoring Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Weekly Lead Scoring Job": {
+      "main": [
+        [
+          {
+            "node": "Wait Before Polling",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Before Polling": {
+      "main": [
+        [
+          {
+            "node": "Check Job Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Job Status": {
+      "main": [
+        [
+          {
+            "node": "Job Done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job Done?": {
+      "main": [
+        [
+          {
+            "node": "Get Top Leads",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not Done Placeholder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Top Leads": {
+      "main": [
+        [
+          {
+            "node": "Build Public Demo Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "public-template",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "description": "Public sanitized n8n template. No credentials, recipients, sheet URLs, or real lead data are included."
+  },
+  "tags": []
+}
